@@ -692,6 +692,11 @@ def main(args=sys.argv[1:]):
                       help="Additional packages to be passed to easy_install "
                            "on remote machines when being run in distributed "
                            "mode.")
+    parser.add_option("--distributed-log-path",
+                      type="string",
+                      dest="distributed_log_path",
+                      help="Path where all the logs will be stored when "
+                           "running a distributed test")
 
     # XXX What exactly is this checking for here??
     cmd_args = " ".join([k for k in args
@@ -728,11 +733,14 @@ def main(args=sys.argv[1:]):
             trace(red_str("Distribution failed with:%s \n" % (error)))
 
         try:
-            distmgr.prepare_workers(allow_errors=True)
-            ret = distmgr.run()
-            distmgr.final_collect()
-        except KeyboardInterrupt:
-            trace("* ^C received *")
+            try:
+                distmgr.prepare_workers(allow_errors=True)
+                ret = distmgr.run()
+                distmgr.final_collect()
+            except KeyboardInterrupt:
+                trace("* ^C received *")
+        finally:
+            # in any case we want to stop the workers at the end
             distmgr.abort()
 
         return ret
