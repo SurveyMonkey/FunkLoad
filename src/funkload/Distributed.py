@@ -29,7 +29,10 @@ from glob import glob
 from xml.etree.ElementTree import ElementTree
 from xmlrpclib import ServerProxy
 
-import paramiko
+try:
+    import paramiko
+except ImportError:
+    import ssh as paramiko
 
 from utils import mmn_encode, trace, package_tests, get_virtualenv_script, \
                   get_version
@@ -451,7 +454,7 @@ class DistributionMgr(threading.Thread):
             remote_tarball = os.path.join(remote_res_dir, tarball)
 
             # setup funkload
-            cmd = "./bin/easy_install setuptools ez_setup {funkload}".format(
+            cmd = "./bin/pip install {funkload}".format(
                 funkload=self.funkload_location)
 
             if self.distributed_packages:
@@ -517,7 +520,6 @@ class DistributionMgr(threading.Thread):
         """
         threads = []
         trace("* Starting %d workers" % len(self._workers))
-
         self.startMonitors()
         for worker in self._workers:
             remote_res_dir = os.path.join(self.remote_res_dir, worker.name)
